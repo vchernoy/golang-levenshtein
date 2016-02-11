@@ -88,3 +88,68 @@ func ExampleWriteMatrix() {
 	// o  7  8  7  6  5  4  3  2  3  4
 	// r  8  9  8  7  6  5  4  3  4  3
 }
+
+func ExampleWriteMatrixFor() {
+	source := []rune("neighbor")
+	target := []rune("Neighbour")
+
+	ops := []EditOperation{
+		Match{},
+		Insertion{1},
+		Deletion{1},
+		Substitution{2},
+	}
+
+	matrix := MatrixForStrings(source, target, ops)
+	WriteMatrixFor(Runes{source, target}, matrix, os.Stdout)
+	// Output:
+	//       N  e  i  g  h  b  o  u  r
+	//    0  1  2  3  4  5  6  7  8  9
+	// n  1  2  3  4  5  6  7  8  9 10
+	// e  2  3  2  3  4  5  6  7  8  9
+	// i  3  4  3  2  3  4  5  6  7  8
+	// g  4  5  4  3  2  3  4  5  6  7
+	// h  5  6  5  4  3  2  3  4  5  6
+	// b  6  7  6  5  4  3  2  3  4  5
+	// o  7  8  7  6  5  4  3  2  3  4
+	// r  8  9  8  7  6  5  4  3  4  3
+}
+
+var wordTestCases = []struct {
+	source   []string
+	target   []string
+	distance int
+}{
+	{[]string{"Hello", "Word"}, []string{"Hello", "Word"}, 0},
+	{[]string{"Hello", "Word"}, []string{"Hello"}, 1},
+	{[]string{"Hello", "Word"}, []string{"Hello", "Beautiful", "Word"}, 1},
+	{[]string{"Hello", "Word"}, []string{"My", "Word"}, 1},
+	{[]string{"Hello", "Word"}, []string{"What", "a", "Beautiful", "Word"}, 3},
+	{[]string{"What", "a", "dangerous", "Word"}, []string{"What", "a", "Beautiful", "Word"}, 1},
+}
+
+func checkWordDist(t *testing.T, name string, source, target []string, correctDistance int) {
+	distance := DistanceFor(Words{Source: source, Target: target}, DefaultLevenshtein)
+
+	if distance != correctDistance {
+		t.Log(
+			name,
+			"distance between",
+			source,
+			"and",
+			target,
+			"computed as",
+			distance,
+			", should be",
+			correctDistance)
+		t.Fail()
+	}
+}
+
+func TestWords(t *testing.T) {
+	ExampleWriteMatrix()
+	for _, testCase := range wordTestCases {
+		checkWordDist(t, "word-Levenshtein", testCase.source, testCase.target, testCase.distance)
+	}
+
+}
