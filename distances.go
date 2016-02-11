@@ -1,4 +1,4 @@
-package levenshtein
+package editdistance
 
 var DefaultLevenshtein []EditOperation = []EditOperation{
 	Match{},

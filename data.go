@@ -1,4 +1,4 @@
-package levenshtein
+package editdistance
 
 type SequencePair interface {
 	SourceLen() int
