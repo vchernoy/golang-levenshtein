@@ -30,7 +30,9 @@ var testCases = []struct {
 }
 
 func checkDistance(t *testing.T, name, source, target string, correctDistance int, ops []EditOperation) {
-	distance := DistanceForStrings([]rune(source), []rune(target), ops)
+	pair := NewRunes(source, target)
+	matrix := NewMatrix(pair, ops)
+	distance := matrix.Distance()
 
 	if distance != correctDistance {
 		t.Log(
@@ -58,14 +60,15 @@ func TestDistanceForStrings(t *testing.T) {
 func ExampleDistanceForStrings() {
 	source := "a"
 	target := "aa"
-	distance := DistanceForStrings([]rune(source), []rune(target), DefaultLevenshtein)
+
+	pair := NewRunes(source, target)
+	distance := NewMatrix(pair, DefaultLevenshtein).Distance()
 	fmt.Printf(`Distance between "%s" and "%s" computed as %d`, source, target, distance)
 	// Output: Distance between "a" and "aa" computed as 1
 }
 
 func ExampleWriteMatrix() {
-	source := []rune("neighbor")
-	target := []rune("Neighbour")
+	pair := NewRunes("neighbor", "Neighbour")
 
 	ops := []EditOperation{
 		Match{},
@@ -74,8 +77,8 @@ func ExampleWriteMatrix() {
 		Substitution{2},
 	}
 
-	matrix := MatrixForStrings(source, target, ops)
-	WriteMatrix(source, target, matrix, os.Stdout)
+	matrix := NewMatrix(pair, ops)
+	matrix.Write(pair, os.Stdout)
 	// Output:
 	//       N  e  i  g  h  b  o  u  r
 	//    0  1  2  3  4  5  6  7  8  9
@@ -90,8 +93,9 @@ func ExampleWriteMatrix() {
 }
 
 func ExampleWriteMatrixFor() {
-	source := []rune("neighbor")
-	target := []rune("Neighbour")
+	source := "neighbor"
+	target := "Neighbour"
+	pair := NewRunes(source, target)
 
 	ops := []EditOperation{
 		Match{},
@@ -100,8 +104,8 @@ func ExampleWriteMatrixFor() {
 		Substitution{2},
 	}
 
-	matrix := MatrixForStrings(source, target, ops)
-	WriteMatrixFor(Runes{source, target}, matrix, os.Stdout)
+	matrix := NewMatrix(pair, ops)
+	matrix.Write(pair, os.Stdout)
 	// Output:
 	//       N  e  i  g  h  b  o  u  r
 	//    0  1  2  3  4  5  6  7  8  9
@@ -129,7 +133,7 @@ var wordTestCases = []struct {
 }
 
 func checkWordDist(t *testing.T, name string, source, target []string, correctDistance int) {
-	distance := DistanceFor(Words{Source: source, Target: target}, DefaultLevenshtein)
+	distance := NewMatrix(Words{Source: source, Target: target}, DefaultLevenshtein).Distance()
 
 	if distance != correctDistance {
 		t.Log(
