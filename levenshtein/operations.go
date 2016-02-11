@@ -6,7 +6,7 @@ type EditScript []EditOperation
 
 type EditOperation interface {
 	fmt.Stringer
-	Apply(source, target []rune, matrix [][]int, i, j int) (int, bool)
+	Apply(data Interface, matrix [][]int, i, j int) (int, bool)
 	Backtrack(matrix [][]int, i, j int) (int, int)
 }
 
@@ -17,8 +17,8 @@ var _ EditOperation = &Match{}
 type Match struct {
 }
 
-func (o Match) Apply(source, target []rune, matrix [][]int, i, j int) (int, bool) {
-	if i > 0 && j > 0 && source[i-1] == target[j-1] {
+func (o Match) Apply(data Interface, matrix [][]int, i, j int) (int, bool) {
+	if i > 0 && j > 0 && data.Equal(i-1, j-1) {
 		return matrix[i-1][j-1], true
 	}
 
@@ -37,7 +37,7 @@ type Insertion struct {
 	Cost int
 }
 
-func (o Insertion) Apply(source, target []rune, matrix [][]int, i, j int) (int, bool) {
+func (o Insertion) Apply(data Interface, matrix [][]int, i, j int) (int, bool) {
 	if j > 0 {
 		return matrix[i][j-1] + o.Cost, true
 	}
@@ -59,7 +59,7 @@ type Deletion struct {
 	Cost int
 }
 
-func (o Deletion) Apply(source, target []rune, matrix [][]int, i, j int) (int, bool) {
+func (o Deletion) Apply(data Interface, matrix [][]int, i, j int) (int, bool) {
 	if i > 0 {
 		return matrix[i-1][j] + o.Cost, true
 	}
@@ -81,7 +81,7 @@ type Substitution struct {
 	Cost int
 }
 
-func (o Substitution) Apply(source, target []rune, matrix [][]int, i, j int) (int, bool) {
+func (o Substitution) Apply(data Interface, matrix [][]int, i, j int) (int, bool) {
 	if i > 0 && j > 0 {
 		return matrix[i-1][j-1] + o.Cost, true
 	}
@@ -103,13 +103,13 @@ type Transposition struct {
 	Cost int
 }
 
-func (o Transposition) Apply(source, target []rune, matrix [][]int, i, j int) (int, bool) {
+func (o Transposition) Apply(data Interface, matrix [][]int, i, j int) (int, bool) {
 	if i > 1 && j > 1 {
-		if source == nil && target == nil {
+		if data == nil {
 			return matrix[i-2][j-2] + o.Cost, true
 		}
 
-		if source[i-1] == target[j-2] && source[i-2] == target[j-1] {
+		if data.Equal(i-1, j-2) && data.Equal(i-2, j-1) {
 			return matrix[i-2][j-2] + o.Cost, true
 		}
 	}
