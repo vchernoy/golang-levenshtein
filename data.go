@@ -1,13 +1,13 @@
 package levenshtein
 
-type Interface interface {
+type SequencePair interface {
 	SourceLen() int
 	TargetLen() int
 	Equal(i, j int) bool
 }
 
-type StringInterface interface {
-	Interface
+type StringSequencePair interface {
+	SequencePair
 	SourceAt(i int) string
 	TargetAt(i int) string
 }
@@ -17,7 +17,7 @@ type Runes struct {
 	Target []rune
 }
 
-var _ StringInterface = Runes{}
+var _ StringSequencePair = Runes{}
 
 func (r Runes) SourceLen() int {
 	return len(r.Source)
@@ -40,7 +40,7 @@ type Words struct {
 	Target []string
 }
 
-var _ StringInterface = Words{}
+var _ StringSequencePair = Words{}
 
 func (w Words) SourceLen() int {
 	return len(w.Source)
