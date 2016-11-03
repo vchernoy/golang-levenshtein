@@ -1,6 +1,28 @@
 package editdistance
 
-import "math"
+import (
+	"math"
+	"fmt"
+)
+
+
+type (
+	EditScript []EditOperation
+
+	EditOperation interface {
+		fmt.Stringer
+		Apply(data SequencePair, matrix Matrix, i, j int) (int, bool)
+		Backtrack(matrix Matrix, i, j int) (int, int)
+	}
+
+	Matrix [][]int
+
+	SequencePair interface {
+		SourceLen() int
+		TargetLen() int
+		Equal(i, j int) bool
+	}
+)
 
 func NewMatrix(p SequencePair, ops []EditOperation) Matrix {
 	// Make a 2-D matrix. Rows correspond to prefixes of source, columns to
@@ -38,13 +60,18 @@ func NewMatrix(p SequencePair, ops []EditOperation) Matrix {
 	return matrix
 }
 
-// NewEditScript returns an optimal edit script based on the given
-// Levenshtein matrix.
-func NewEditScript(matrix Matrix, ops []EditOperation) EditScript {
-	return backtrace(len(matrix[0])-1, len(matrix)-1, matrix, ops)
+// Distance reads the edit distance off the Levenshtein matrix.
+func (m Matrix) Distance() int {
+	return m[len(m)-1][len(m[0])-1]
 }
 
-func backtrace(i int, j int, matrix Matrix, ops []EditOperation) EditScript {
+// NewEditScript returns an optimal edit script based on the given
+// Levenshtein matrix.
+func (m Matrix) EditScript(p SequencePair, ops []EditOperation) EditScript {
+	return backtrace(p, len(m)-1, len(m[0])-1, m, ops)
+}
+
+func backtrace(p SequencePair, i int, j int, matrix Matrix, ops []EditOperation) EditScript {
 	for _, op := range ops {
 		ib, jb := op.Backtrack(matrix, i, j)
 
@@ -52,8 +79,8 @@ func backtrace(i int, j int, matrix Matrix, ops []EditOperation) EditScript {
 			continue
 		}
 
-		if cost, ok := op.Apply(nil, matrix, ib, jb); ok && cost == matrix[i][j] {
-			return append(backtrace(ib, jb, matrix, ops), op)
+		if cost, ok := op.Apply(p, matrix, i, j); ok && cost == matrix[i][j] {
+			return append(backtrace(p, ib, jb, matrix, ops), op)
 		}
 	}
 

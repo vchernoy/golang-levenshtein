@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"log"
 )
 
 var testCases = []struct {
@@ -78,7 +79,7 @@ func ExampleWriteMatrix() {
 	}
 
 	matrix := NewMatrix(pair, ops)
-	matrix.Write(pair, os.Stdout)
+	Write(matrix, pair, os.Stdout)
 	// Output:
 	//       N  e  i  g  h  b  o  u  r
 	//    0  1  2  3  4  5  6  7  8  9
@@ -105,7 +106,7 @@ func ExampleWriteMatrixFor() {
 	}
 
 	matrix := NewMatrix(pair, ops)
-	matrix.Write(pair, os.Stdout)
+	Write(matrix, pair, os.Stdout)
 	// Output:
 	//       N  e  i  g  h  b  o  u  r
 	//    0  1  2  3  4  5  6  7  8  9
@@ -148,6 +149,9 @@ func checkWordDist(t *testing.T, name string, source, target []string, correctDi
 			correctDistance)
 		t.Fail()
 	}
+	m := NewMatrix(Words{Source: source, Target: target}, DefaultLevenshtein)
+	editScript := m.EditScript(Words{Source: source, Target: target}, DefaultLevenshtein)
+	log.Printf("%v; %v: script: %v", source, target, editScript)
 }
 
 func TestWords(t *testing.T) {
